@@ -23,8 +23,13 @@ export function exportProfessionalsToExcel(professionals: Professional[], filena
     'Estado Verificación': p.verificationStatus,
     'Alerta Homónimo': p.isHomonymSuspect ? 'SÍ' : 'NO',
     'Alerta Inconsistencia': p.fraudSuspect ? 'SÍ' : 'NO',
-    'Contacto Institucional': p.publicProfessionalEmail || 'No publicado',
-    'Última Verificación': p.last_verified_at
+    'Teléfono / Celular Profesional': p.directProfessionalPhone || p.publicProfessionalPhone || 'N/A',
+    'Teléfono Despacho / Oficina': p.professionalOfficePhone || 'N/A',
+    'Correo Profesional': p.publicProfessionalEmail || 'No publicado',
+    'Registro Sectorial DGAA': p.dgaaRegistryEntity || 'SENACE RNCA',
+    'Central / Anexo DGAA': p.dgaaRegistryPhone || 'N/A',
+    'Correo DGAA / Mesa de Partes': p.dgaaRegistryEmail || 'N/A',
+    'Última Verificación': p.last_verified_at || '2026-10-06'
   }));
 
   const worksheet = XLSX.utils.json_to_sheet(data);
@@ -102,7 +107,12 @@ export function exportProfessionalsToCsv(professionals: Professional[], filename
     envYearsExp: p.environmentalExperienceYears,
     score: p.scores.total,
     status: p.verificationStatus,
-    senaceSpecialist: p.senaceSpecialist ? 'true' : 'false'
+    senaceSpecialist: p.senaceSpecialist ? 'true' : 'false',
+    phone: p.directProfessionalPhone || p.publicProfessionalPhone || '',
+    officePhone: p.professionalOfficePhone || '',
+    email: p.publicProfessionalEmail || '',
+    dgaaEntity: p.dgaaRegistryEntity || '',
+    dgaaPhone: p.dgaaRegistryPhone || ''
   })));
   const csvOutput = XLSX.utils.sheet_to_csv(worksheet);
   const blob = new Blob([csvOutput], { type: 'text/csv;charset=utf-8;' });

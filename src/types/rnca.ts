@@ -112,13 +112,21 @@ export interface Professional {
   colegiaturaVerified: boolean;
   habilitacionVerified: boolean;
   
-  // Public professional contact strictly pursuant to Ley 29733 (Corporate/institutional only)
+  // Public professional contact & verified registry channels
   publicProfessionalEmail?: string;
   publicProfessionalPhone?: string;
+  directProfessionalPhone?: string;
+  professionalOfficePhone?: string;
+  dgaaRegistryEntity?: string;
+  dgaaRegistryPhone?: string;
+  dgaaRegistryEmail?: string;
   publicContactSource?: string;
   linkedinUrl?: string;
   orcidUrl?: string;
   profileUrl?: string;
+  colegioPortalUrl?: string;
+  ctiVitaeUrl?: string;
+  canalContactoOficial?: string;
   
   // Scoring & Evaluation
   verificationStatus: VerificationStatus;
@@ -285,4 +293,30 @@ export interface Formulario4Evaluation {
   evaluationSummary: string;
   observations: string[];
   recommendations: string[];
+}
+
+export interface DgaaContactEntity {
+  id: string;
+  name: string;
+  abbreviation: string;
+  ministryOrAuthority: string;
+  subsectors: SubsectorId[];
+  address: string;
+  centralPhone: string;
+  annexes: {
+    area: string;
+    annex: string;
+    description: string;
+  }[];
+  tollFreeLine?: string;
+  cellOrWhatsapp?: string;
+  officialEmails: {
+    purpose: string;
+    email: string;
+  }[];
+  officeHours: string;
+  procedureUrl: string;
+  onlineDeskUrl?: string;
+  responsibleOffice: string;
+  consultantRegistryInfo: string;
 }

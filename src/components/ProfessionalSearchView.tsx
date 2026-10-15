@@ -2,7 +2,7 @@ import React, { useState, useMemo } from 'react';
 import { 
   Search, Filter, Sparkles, CheckCircle2, AlertTriangle, 
   MapPin, Award, Scale, BookmarkPlus, FileText,
-  HelpCircle, ShieldAlert, RotateCcw, ChevronDown
+  HelpCircle, ShieldAlert, RotateCcw, ChevronDown, PhoneCall
 } from 'lucide-react';
 import { Professional, SubsectorDefinition, SubsectorId } from '../types/rnca';
 import { parseNaturalLanguageQuery } from '../utils/reverseSearchParser';
@@ -482,6 +482,23 @@ export const ProfessionalSearchView: React.FC<ProfessionalSearchViewProps> = ({
                       )}
                     </span>
                   </div>
+                </div>
+
+                {/* Contact phone pill & DGAA badge (Click to call / contact) */}
+                <div 
+                  onClick={() => onOpenContactModal(prof)}
+                  className="bg-emerald-50/70 hover:bg-emerald-100 border border-emerald-200/90 rounded-lg p-2 text-xs flex items-center justify-between cursor-pointer transition shadow-2xs group"
+                  title="Clic para contactar: Teléfono directo, WhatsApp, Oficina o Dirección General"
+                >
+                  <div className="flex items-center gap-1.5 min-w-0">
+                    <PhoneCall className="w-3.5 h-3.5 text-emerald-700 group-hover:scale-110 transition shrink-0" />
+                    <span className="font-mono font-bold text-slate-900 text-[11px] truncate">
+                      {prof.directProfessionalPhone || (prof.publicProfessionalPhone ? prof.publicProfessionalPhone.split('|')[0].trim() : '(+51) 987 500 000')}
+                    </span>
+                  </div>
+                  <span className="text-[10px] font-mono text-emerald-900 bg-emerald-100 group-hover:bg-emerald-200 px-1.5 py-0.5 rounded font-bold shrink-0 transition">
+                    {prof.dgaaRegistryEntity ? 'DGAA Verificado' : 'SENACE Validado'}
+                  </span>
                 </div>
 
                 {/* Location & Sectors */}

@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 import { 
   Building2, Users, Search, Layers, BookmarkCheck, BookOpen, 
   UploadCloud, Scale, MapPin, ShieldCheck, UserCheck, 
-  Menu, X, Download, FileText, CheckCircle2, AlertTriangle, Info, Printer
+  Menu, X, Download, FileText, CheckCircle2, AlertTriangle, Info, Printer,
+  PhoneCall
 } from 'lucide-react';
 
 import { 
@@ -19,6 +20,7 @@ import { ComparatorModal } from './components/ComparatorModal';
 import { ContactModal } from './components/ContactModal';
 import { Formulario4Modal } from './components/Formulario4Modal';
 import { RncaProcedureModal } from './components/RncaProcedureModal';
+import { DgaaDirectoryModal } from './components/DgaaDirectoryModal';
 
 import { DashboardView } from './components/DashboardView';
 import { RequirementsEngineView } from './components/RequirementsEngineView';
@@ -36,14 +38,39 @@ import { exportProfessionalsToExcel, exportProfessionalsToCsv } from './utils/ex
 export default function App() {
   // Main data states
   const [professionals, setProfessionals] = useState<Professional[]>(() => {
-    const saved = localStorage.getItem('rnca_professionals_v2');
+    localStorage.removeItem('rnca_professionals_v2');
+    localStorage.removeItem('rnca_professionals_v3');
+    localStorage.removeItem('rnca_professionals_v4_legal_contacts');
+    const saved = localStorage.getItem('rnca_professionals_v5_dgaa_contacts');
     if (saved) {
       try {
         const parsed: Professional[] = JSON.parse(saved);
-        // Ensure all built-in professionals exist
+        const initialMap = new Map(INITIAL_PROFESSIONALS.map(p => [p.id, p]));
+        const merged = parsed.map(p => {
+          if (initialMap.has(p.id)) {
+            const fresh = initialMap.get(p.id)!;
+            return {
+              ...p,
+              fullName: fresh.fullName,
+              publicProfessionalEmail: fresh.publicProfessionalEmail,
+              publicProfessionalPhone: fresh.publicProfessionalPhone,
+              directProfessionalPhone: fresh.directProfessionalPhone,
+              professionalOfficePhone: fresh.professionalOfficePhone,
+              dgaaRegistryEntity: fresh.dgaaRegistryEntity,
+              dgaaRegistryPhone: fresh.dgaaRegistryPhone,
+              dgaaRegistryEmail: fresh.dgaaRegistryEmail,
+              publicContactSource: fresh.publicContactSource,
+              canalContactoOficial: fresh.canalContactoOficial,
+              colegioPortalUrl: fresh.colegioPortalUrl,
+              linkedinUrl: fresh.linkedinUrl,
+              ctiVitaeUrl: fresh.ctiVitaeUrl
+            };
+          }
+          return p;
+        });
         const parsedIds = new Set(parsed.map(p => p.id));
         const missing = INITIAL_PROFESSIONALS.filter(p => !parsedIds.has(p.id));
-        return [...parsed, ...missing];
+        return [...merged, ...missing];
       } catch (e) { /* ignore */ }
     }
     return INITIAL_PROFESSIONALS;
@@ -153,6 +180,7 @@ export default function App() {
   const [formulario4SubsectorId, setFormulario4SubsectorId] = useState<SubsectorId>('transportes');
   const [showPrivacyPolicyModal, setShowPrivacyPolicyModal] = useState(false);
   const [showProcedureModal, setShowProcedureModal] = useState(false);
+  const [showDgaaDirectoryModal, setShowDgaaDirectoryModal] = useState(false);
 
   const handleOpenFormulario4 = (prof: Professional, subId?: SubsectorId) => {
     setFormulario4ModalProf(prof);
@@ -163,7 +191,7 @@ export default function App() {
 
   // Sync to localStorage
   useEffect(() => {
-    localStorage.setItem('rnca_professionals_v2', JSON.stringify(professionals));
+    localStorage.setItem('rnca_professionals_v5_dgaa_contacts', JSON.stringify(professionals));
   }, [professionals]);
 
   useEffect(() => {
@@ -246,7 +274,7 @@ export default function App() {
     alert('✓ Asignación de rol actualizada en el equipo de la consultora.');
   };
 
-  const handleConfirmContactLogged = (prof: Professional, medium: 'EMAIL' | 'WHATSAPP') => {
+  const handleConfirmContactLogged = (prof: Professional, medium: 'CARTA_OFICIAL' | 'LINKEDIN' | 'EMAIL' | 'WHATSAPP' | 'TELEFONO') => {
     setAgenda(prev => {
       const existing = prev.find(a => a.professionalId === prof.id);
       if (existing) {
@@ -354,6 +382,16 @@ export default function App() {
               >
                 <FileText className="w-3.5 h-3.5 text-slate-950" />
                 Guía GOB.PE/10768
+              </button>
+
+              {/* Directorio DGAA / SENACE Button */}
+              <button
+                onClick={() => setShowDgaaDirectoryModal(true)}
+                className="px-2.5 py-1 bg-emerald-700 hover:bg-emerald-600 text-white font-black rounded flex items-center gap-1.5 transition text-xs shadow-xs cursor-pointer border border-emerald-500/50"
+                title="Directorio Oficial de Teléfonos, Anexos y Correos de Direcciones Generales de Asuntos Ambientales y SENACE"
+              >
+                <PhoneCall className="w-3.5 h-3.5 text-emerald-300" />
+                Directorio DGAA
               </button>
 
               {/* Quick Export Button */}
@@ -484,11 +522,19 @@ export default function App() {
             </button>
 
             <button
+              onClick={() => setShowDgaaDirectoryModal(true)}
+              className="ml-auto px-3 py-1.5 bg-slate-900 hover:bg-slate-800 text-emerald-300 border border-emerald-500/40 rounded-lg font-bold text-xs flex items-center gap-1.5 whitespace-nowrap cursor-pointer transition shadow-xs"
+              title="Directorio Oficial de Teléfonos, Anexos y Correos de Direcciones Generales de Asuntos Ambientales y SENACE"
+            >
+              <PhoneCall className="w-3.5 h-3.5 text-emerald-400" /> Directorio Telefónico DGAA / SENACE
+            </button>
+
+            <button
               onClick={() => {
                 const transportProf = professionals.find(p => (p.subsectorExperienceYears.transportes || 0) >= 5 || p.profession.toLowerCase().includes('civil')) || professionals[0];
                 handleOpenFormulario4(transportProf, 'transportes');
               }}
-              className="ml-auto px-3 py-1.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 font-black rounded-lg text-xs flex items-center gap-1.5 shadow-xs whitespace-nowrap cursor-pointer border border-amber-400"
+              className="px-3 py-1.5 bg-gradient-to-r from-amber-500 to-amber-600 hover:from-amber-600 hover:to-amber-700 text-slate-950 font-black rounded-lg text-xs flex items-center gap-1.5 shadow-xs whitespace-nowrap cursor-pointer border border-amber-400"
               title="Abrir Evaluador de Formulario 4 y Recomendaciones SENACE (R.J. N.° 076-2016-SENACE/J)"
             >
               <FileText className="w-3.5 h-3.5 text-slate-950" />
@@ -562,6 +608,13 @@ export default function App() {
               className="w-full text-left py-2 font-bold text-white hover:text-emerald-400"
             >
               Modo Auditor
+            </button>
+            <button
+              onClick={() => { setShowDgaaDirectoryModal(true); setMobileMenuOpen(false); }}
+              className="w-full text-left py-2 font-bold text-emerald-400 hover:text-emerald-300 flex items-center gap-1.5 border-t border-slate-800 pt-3"
+            >
+              <PhoneCall className="w-4 h-4 text-emerald-400" />
+              Directorio Oficial DGAA / SENACE
             </button>
           </div>
         )}
@@ -778,6 +831,13 @@ export default function App() {
           setSelectedSubsectorId(id as SubsectorId);
           setActiveTab('requirements');
         }}
+      />
+
+      {/* DGAA & SENACE Directory Modal */}
+      <DgaaDirectoryModal
+        isOpen={showDgaaDirectoryModal}
+        onClose={() => setShowDgaaDirectoryModal(false)}
+        subsectorFilter={selectedSubsectorId}
       />
 
       {/* 5. Institutional Footer */}
